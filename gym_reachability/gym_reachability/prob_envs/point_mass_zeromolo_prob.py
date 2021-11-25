@@ -23,7 +23,7 @@ class ZermeloShowEnv(gym.Env):
 
   def __init__(
       self, device, mode='RA', doneType='toEnd', thickness=.1,
-      sample_inside_obs=False, envType='show'
+      sample_inside_obs=False, envType='show',
   ):
     """Initializes the environment with given arguments.
 
@@ -61,6 +61,16 @@ class ZermeloShowEnv(gym.Env):
     self.discrete_controls = np.array([[
         -self.horizontal_rate, self.upward_speed
     ], [0, self.upward_speed], [self.horizontal_rate, self.upward_speed]])
+
+    # local_map parameters
+    # TODO complete me
+
+    # safety_margin parameters # TODO play around with these
+    self.beta = 1
+    self.cutoff_radius = 3
+    self.threshold = 5*3.14
+    # Given these parameters, the characteristic radius is 0.5
+
 
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]
@@ -165,7 +175,7 @@ class ZermeloShowEnv(gym.Env):
     new_states = []
     for state in states:
       l_x = self.target_margin(state)
-      g_x = self.safety_margin(state)
+      g_x = self.safety_margin(state, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
       new_states.append(np.append(state, max(l_x, g_x)))
     return new_states
 
@@ -201,7 +211,7 @@ class ZermeloShowEnv(gym.Env):
     # Repeat sampling until outside obstacle if needed.
     while inside_obs:
       xy_sample = np.random.uniform(low=self.low, high=self.high)
-      g_x = self.safety_margin(xy_sample)
+      g_x = self.safety_margin(xy_sample, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
       inside_obs = (g_x > 0)
       if sample_inside_obs:
         break
@@ -293,7 +303,7 @@ class ZermeloShowEnv(gym.Env):
     y = y + self.time_step * u[1]
 
     l_x = self.target_margin(np.array([x, y]))
-    g_x = self.safety_margin(np.array([x, y]))
+    g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
 
     if self.mode == 'extend':
       z = min(z, max(l_x, g_x))
@@ -381,33 +391,6 @@ class ZermeloShowEnv(gym.Env):
     if verbose:
       print("sample_inside_obs-{}".format(self.sample_inside_obs))
 
-  # == Getting Margin ==
-  def safety_margin(self, s):
-    """Computes the margin (e.g. distance) between the state and the failue set.
-
-    Args:
-        s (np.ndarray): the state of the agent.
-
-    Returns:
-        float: postivive numbers indicate being inside the failure set (safety
-            violation).
-    """
-    g_x_list = []
-
-    # constraint_set_safety_margin
-    for _, constraint_set in enumerate(self.constraint_x_y_w_h):
-      g_x = calculate_margin_rect(s, constraint_set, negativeInside=False)
-      g_x_list.append(g_x)
-
-    # enclosure_safety_margin
-    boundary_x_y_w_h = np.append(self.midpoint, self.interval)
-    g_x = calculate_margin_rect(s, boundary_x_y_w_h, negativeInside=True)
-    g_x_list.append(g_x)
-
-    safety_margin = np.max(np.array(g_x_list))
-
-    return self.scaling * safety_margin
-
   # == Getting Information ==
   def check_within_env(self, state):
     """Checks if the robot is still in the environment.
@@ -488,7 +471,7 @@ class ZermeloShowEnv(gym.Env):
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = self.safety_margin(np.array([x, y]))
+      g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
       heuristic_v[i, :] = np.maximum(l_x, g_x)
       states[i, :] = x, y
 
@@ -535,7 +518,7 @@ class ZermeloShowEnv(gym.Env):
       x = xs[idx[0]]
       y = ys[idx[1]]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = self.safety_margin(np.array([x, y]))
+      g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
 
       if self.mode == 'normal' or self.mode == 'RA':
         state = torch.FloatTensor([x, y]).to(self.device).unsqueeze(0)
@@ -589,7 +572,7 @@ class ZermeloShowEnv(gym.Env):
           result = 1
           break
       else:
-        if self.safety_margin(state[:2]) > 0:
+        if self.safety_margin(state[:2], self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map) > 0:
           result = -1  # failed
           break
         elif self.target_margin(state[:2]) <= 0:

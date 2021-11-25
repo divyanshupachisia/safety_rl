@@ -1,5 +1,5 @@
 import math
-
+from .env_utils import calculate_margin_rect
 import numpy as np
 
 def safety_margin(scaling_factor, s, R, cutoff_radius, threshold, local_map):
@@ -40,21 +40,24 @@ def safety_margin(scaling_factor, s, R, cutoff_radius, threshold, local_map):
 
     return adjusted_margin
 
-
-def target_margin(scaling_factor, s, target_dims, R):
-    """Computes the adjusted margin between the state and the target set.
+def target_margin(self, s):
+    """Computes the margin (e.g. distance) between the state and the target set.
 
     Args:
         s (np.ndarray): the state of the agent.
 
     Returns:
-        float: negative numbers indicate reaching the target. If the target set
+        float: 0 or negative numbers indicate reaching the target. If the target set
             is not specified, return None.
     """
+    l_x_list = []
 
-    t_x, t_y = [target_dims[0]+(target_dims[2]+1), target_dims[1]+(target_dims[2]+1)] # Obtain center coordinates from target_x_y_length (need to account for different square sizes)
+    # target_set_safety_margin
+    for _, target_set in enumerate(self.target_x_y_w_h):
+      l_x = calculate_margin_rect(s, target_set, negativeInside=True)
+      l_x_list.append(l_x)
 
-    box4_target_margin = 0 # TODO finsish this
+    target_margin = np.max(np.array(l_x_list)) # TODO change this to the inverse formula?
+                                               # TODO, if so, ensure that the value entered into the inverse function is > -1/alpha or equivalent
 
-    target_margin = -R*R*1/(box4_target_margin + R) + R # Same function scale as the safety margin
-    return scaling_factor * target_margin
+    return self.scaling * target_margin

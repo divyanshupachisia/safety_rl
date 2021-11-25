@@ -26,7 +26,7 @@ def safety_margin(scaling_factor, s, R, cutoff_radius, threshold, local_map):
 
             distance = math.sqrt((x-i)*(x-i) + (y-j)(y-j))
 
-            if distance < cutoff_radius:
+            if distance <= cutoff_radius:
 
                 # Inside the boundary
                 if i >= 0 and i < len(local_map) and j >= 0 and j < len(local_map[0]):

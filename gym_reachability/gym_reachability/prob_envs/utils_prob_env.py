@@ -52,6 +52,7 @@ def get_local_map(R, grid, cur_pos):
                 # check if you're out of bounds and if so append 1 (obstacle)
                 if i < 0 or i > row-1 or j < 0 or j > col-1: 
                     local_map.append(1)
+
                 # append value of grid if you're not out of bounds and are within R
                 else: 
                     local_map.append(grid[i][j])

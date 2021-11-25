@@ -29,8 +29,9 @@ cur_pos is a tuple (i,j)
 def get_local_map(R, grid, cur_pos):
 
     # get the position
-    x_pos = cur_pos[0] 
-    y_pos = cur_pos[1]
+    x_pos = int(round(cur_pos[0]))
+    y_pos = int(round(cur_pos[1]))
+    print("Current Position: {},{}".format(x_pos,y_pos))
 
     # define square you need to iterate over
     x_range_low = x_pos - R
@@ -60,5 +61,4 @@ def get_local_map(R, grid, cur_pos):
 
 # for testing
 grid = gen_grid()
-local_map = get_local_map(2, grid, (0,0))
-print(local_map)
+local_map = get_local_map(2, grid, (0.3,0.6))

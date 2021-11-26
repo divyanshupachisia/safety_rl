@@ -4,10 +4,64 @@ import numpy as np
 from utils_prob_env import gen_grid # TODO remove after testing harness finished
 import matplotlib.pyplot as plt
 
-
-
 def safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
-    """Computes the safety margin .
+    """Computes the safety margin . Each grid cell is further divided into 25 parts for the purposes of the calculation
+
+    Args:
+        s (np.ndarray): the state of the agent.
+        scaling_factor (positive float): the scaling factor for the environment
+        beta (positive float): the coefficient of the g function (derived from the characteristic radius)
+        cutoff_radius (positive float): only cells closer than cutoff_radius are included in the calculation
+        threshold (positive float): the threshold for the safety margin that delineates any return value > 0 as unsafe
+        local_map (2D np array of floats in [0,1]): The risk map for this environment
+
+        To create a "safety bubble" of radius R, in which there is 0 probability of an obstacle (and assuming that
+        all the space from R to cutoff_radius is an obstacle), then threshold < 2*pi*beta(cutoff_radius-R)
+
+    Returns:
+        float: positive numbers indicate being inside the failure set (safety violation).
+    """
+    divisions = 5
+
+    og_x, og_y = s
+
+    closest_x = int(round(og_x))
+    closest_y = int(round(og_y))
+
+    safety_margin = 0
+
+    # Add the current grid value to safety margin
+    safety_margin = safety_margin + threshold*local_map[closest_x, closest_y]/(divisions*divisions)
+
+    square_count = 1
+
+    for i in np.arange(og_x-cutoff_radius, og_x+cutoff_radius+(1/divisions), 1/divisions):
+        for j in np.arange(og_y-cutoff_radius, og_y+cutoff_radius+(1/divisions), 1/divisions):
+
+            grid_distance = math.sqrt(float(((closest_x-i)*(closest_x-i)) + ((closest_y-j)*(closest_y-j))))
+            actual_distance = math.sqrt(float(((og_x-i)*(og_x-i)) + ((og_y-j)*(og_y-j))))
+
+            closest_i = int(round(i))
+            closest_j = int(round(j))
+
+            if (closest_x != closest_i or closest_y != closest_j) and actual_distance <= cutoff_radius: # Exclude the original cell and all cells farther from the distance
+
+                square_count += 1
+
+                # Inside the boundary
+                if closest_i >= 0 and closest_i < len(local_map) and closest_j >= 0 and closest_j < len(local_map[0]):
+                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*local_map[closest_i][closest_j]/(divisions*divisions)
+
+                # Outside the boundary or on the boundary line
+                else:
+                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*1/(divisions*divisions)
+
+    adjusted_margin = scaling_factor*(safety_margin-threshold)
+
+    return adjusted_margin
+
+def safety_margin_grid(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
+    """Computes the safety margin, where the point mass is assumed to be located at the nearest grid point.
 
     Args:
         s (np.ndarray): the state of the agent.
@@ -31,7 +85,7 @@ def safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
 
     safety_margin = 0
 
-    # Add the current grid value to safety margin
+    # Add the current grid value to safety margin, assuming a distance of 1
     safety_margin = safety_margin + threshold*local_map[closest_x, closest_y]
 
     square_count = 1
@@ -48,11 +102,11 @@ def safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
 
                 # Inside the boundary
                 if i >= 0 and i < len(local_map) and j >= 0 and j < len(local_map[0]):
-                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*local_map[i][j]
+                    safety_margin = safety_margin + (beta*1/(grid_distance + (beta/threshold)))*local_map[i][j]
 
                 # Outside the boundary or on the boundary line
                 else:
-                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*1
+                    safety_margin = safety_margin + (beta*1/(grid_distance + (beta/threshold)))*1
 
     adjusted_margin = scaling_factor*(safety_margin-threshold)
 
@@ -85,14 +139,10 @@ def print_safety_margin(local_map, divisions):
 
     plt.subplot(1, 2, 2)
     plt.imshow(-1*local_map, interpolation='nearest', cmap="RdBu")
-    plt.title('Safety Margin Value Heat Map')
+    plt.title('Obstacle Probability Heat Map')
 
     plt.tight_layout()
     plt.show()
-
-
-
-
 
 def target_margin(self, s):
     """Computes the margin (e.g. distance) between the state and the target set.
@@ -122,7 +172,7 @@ def target_margin(self, s):
 scaling_factor = 1
 beta = 1
 cutoff_radius = 2
-threshold = 2.1*math.pi # Given these parameters, the characteristic radius is 1
+threshold = 2.8*math.pi # Given these parameters, the characteristic radius is 1
 local_map = gen_grid()
 
 print(local_map)

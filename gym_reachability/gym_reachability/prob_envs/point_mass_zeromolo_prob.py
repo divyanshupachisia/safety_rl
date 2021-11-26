@@ -19,7 +19,7 @@ import random
 from .env_utils import calculate_margin_rect
 
 
-class ZermeloShowEnv(gym.Env):
+class ProbZermeloShowEnv(gym.Env):
 
   def __init__(
       self, device, mode='RA', doneType='toEnd', thickness=.1,
@@ -44,7 +44,7 @@ class ZermeloShowEnv(gym.Env):
     if envType == 'basic' or envType == 'easy':
       self.bounds = np.array([[-2, 2], [-2, 10]])
     else:
-      self.bounds = np.array([[-3., 3.], [0., 6.]])
+      self.bounds = np.array([[-0.5, 9.5], [-0.5, 9.5]])
     self.low = self.bounds[:, 0]
     self.high = self.bounds[:, 1]
     self.sample_inside_obs = sample_inside_obs
@@ -74,32 +74,32 @@ class ZermeloShowEnv(gym.Env):
 
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]
-    if envType == 'basic':
-      self.constraint_x_y_w_h = np.array([
-          [1.25, 2, 1.5, 1.5],
-          [-1.25, 2, 1.5, 1.5],
-          [0, 6, 1.5, 1.5],
-      ])
-      self.constraint_type = ['R', 'L', 'C']
-    elif envType == 'easy':
-      self.constraint_x_y_w_h = np.array([
-          [1.25, 2, 1.5, 1.5],
-          [-1.25, 2, 1.5, 1.5],
-          [0, 6, 3., thickness],
-      ])
-      self.constraint_type = ['R', 'L', 'C']
-    else:
-      self.constraint_x_y_w_h = np.array([
-          [0., 1.5, 4., thickness],
-          [0., 4., 4., thickness],
-      ])
-      self.constraint_type = ['C', 'C']
+    # if envType == 'basic':
+    #   self.constraint_x_y_w_h = np.array([
+    #       [1.25, 2, 1.5, 1.5],
+    #       [-1.25, 2, 1.5, 1.5],
+    #       [0, 6, 1.5, 1.5],
+    #   ])
+    #   self.constraint_type = ['R', 'L', 'C']
+    # elif envType == 'easy':
+    #   self.constraint_x_y_w_h = np.array([
+    #       [1.25, 2, 1.5, 1.5],
+    #       [-1.25, 2, 1.5, 1.5],
+    #       [0, 6, 3., thickness],
+    #   ])
+    #   self.constraint_type = ['R', 'L', 'C']
+    # else:
+    #   self.constraint_x_y_w_h = np.array([
+    #       [0., 1.5, 4., thickness],
+    #       [0., 4., 4., thickness],
+    #   ])
+    #   self.constraint_type = ['C', 'C']
 
     # Target Set Parameters.
     if envType == 'basic' or envType == 'easy':
-      self.target_x_y_w_h = np.array([[0., 9.25, 1.5, 1.5]])
+      self.target_x_y_w_h = np.array([[1.51, 4.51, 2, 2]])
     else:
-      self.target_x_y_w_h = np.array([[0., 5.5, 1., 1.]])
+      self.target_x_y_w_h = np.array([[1.51, 4.51, 2, 2]])
 
     # Gym variables.
     self.action_space = gym.spaces.Discrete(3)  # {left, up, right}
@@ -130,7 +130,7 @@ class ZermeloShowEnv(gym.Env):
     self.doneType = doneType
 
     # Visualization Parameters
-    self.constraint_set_boundary = self.get_constraint_set_boundary()
+    # self.constraint_set_boundary = self.get_constraint_set_boundary()
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
@@ -352,24 +352,24 @@ class ZermeloShowEnv(gym.Env):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
-  def set_bounds(self, bounds):
-    """Sets the boundary and the observation_space of the environment.
-
-    Args:
-        bounds (np.ndarray): of the shape (n_dim, 2). Each row is [LB, UB].
-    """
-    self.bounds = bounds
-
-    # Get lower and upper bounds
-    self.low = np.array(self.bounds)[:, 0]
-    self.high = np.array(self.bounds)[:, 1]
-
-    # Double the range in each state dimension for Gym interface.
-    midpoint = (self.low + self.high) / 2.0
-    interval = self.high - self.low
-    self.observation_space = gym.spaces.Box(
-        np.float32(midpoint - interval/2), np.float32(midpoint + interval/2)
-    )
+  # def set_bounds(self, bounds):
+  #   """Sets the boundary and the observation_space of the environment.
+  #
+  #   Args:
+  #       bounds (np.ndarray): of the shape (n_dim, 2). Each row is [LB, UB].
+  #   """
+  #   self.bounds = bounds
+  #
+  #   # Get lower and upper bounds
+  #   self.low = np.array(self.bounds)[:, 0]
+  #   self.high = np.array(self.bounds)[:, 1]
+  #
+  #   # Double the range in each state dimension for Gym interface.
+  #   midpoint = (self.low + self.high) / 2.0
+  #   interval = self.high - self.low
+  #   self.observation_space = gym.spaces.Box(
+  #       np.float32(midpoint - interval/2), np.float32(midpoint + interval/2)
+  #   )
 
   def set_doneType(self, doneType):
     """Sets the condition to terminate the episode.
@@ -802,12 +802,14 @@ class ZermeloShowEnv(gym.Env):
         lw (float, optional): liewidth. Defaults to 1.5.
         zorder (int, optional): graph layers order. Defaults to 1.
     """
-    # Plot bounadries of constraint set.
-    for one_boundary in self.constraint_set_boundary:
-      ax.plot(
-          one_boundary[:, 0], one_boundary[:, 1], color=c_c, lw=lw,
-          zorder=zorder
-      )
+
+    # Plot boundaries of constraint set.
+    # for one_boundary in self.constraint_set_boundary:
+    #   ax.plot(
+    #       one_boundary[:, 0], one_boundary[:, 1], color=c_c, lw=lw,
+    #       zorder=zorder
+    #   )
+    #
 
     # Plot boundaries of target set.
     for one_boundary in self.target_set_boundary:

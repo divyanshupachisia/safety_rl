@@ -67,7 +67,7 @@ class ZermeloShowEnv(gym.Env):
 
     # safety_margin parameters # TODO play around with these
     self.beta = 1
-    self.cutoff_radius = 3
+    self.cutoff_radius = 2.1
     self.threshold = 5*3.14
     # Given these parameters, the characteristic radius is 0.5
 

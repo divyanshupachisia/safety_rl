@@ -6,16 +6,17 @@ Values represent probability of obstacle
 '''
 def gen_grid(): 
     # just for testing, need to come up with many such environments (perhaps parameterized in some way)
+    # local maps must be floats
     grid = np.array([
+            [0.9, 0.9, 0.8, 0.6, 0.3, 0.0, 0.6, 0.8, 0.0, 0.95],
             [0.9, 0.9, 0.8, 0.6, 0.3, 0.0, 0.6, 0.8, 0.9, 0.95],
-            [0.9, 0.9, 0.8, 0.6, 0.3, 0.0, 0.6, 0.8, 0.9, 0.95],
-            [0.9, 0.9, 0.4, 0.1, 0.1, 0.1, 0.3, 0.8, 0.9, 0.95], 
+            [0.9, 0.9, 0.4, 0.1, 0.1, 0.1, 0.3, 0.8, 0.9, 0.95],
             [0.9, 0.9, 0.0, 0.1, 0.1, 0.1, 0.3, 0.8, 0.9, 0.95],
-            [0.9, 0.9, 0.2, 0.6, 0.8, 0.8, 0.6, 0.8, 0.9, 0.95], 
+            [0.9, 0.9, 0.2, 0.6, 0.8, 0.8, 0.6, 0.8, 0.9, 0.95],
             [0.9, 0.9, 0.2, 0.6, 0.8, 0.8, 0.6, 0.8, 0.9, 0.95],
             [0.9, 0.9, 0.0, 0.2, 0.2, 0.1, 0.1, 0.8, 0.9, 0.95],
             [0.9, 0.9, 0.4, 0.0, 0.0, 0.0, 0.0, 0.8, 0.9, 0.95],
-            [0.9, 0.9, 0.3, 0.0, 0.0, 0.0, 0.0, 0.8, 0.9, 0.95], 
+            [0.9, 0.9, 0.3, 0.0, 0.0, 0.0, 0.0, 0.8, 0.9, 0.95],
             [0.9, 0.9, 0.2, 0.0, 0.0, 0.0, 0.0, 0.8, 0.9, 0.95]
             ])
     
@@ -38,6 +39,7 @@ def get_local_map(R, grid, cur_pos):
     x_range_high = x_pos + R
     y_range_low = y_pos - R 
     y_range_high = y_pos + R
+    # TODO need to change this so that R can be a float (range won't work in loops below)
 
     row, col = grid.shape # to check if we're out of bounds
     local_map = [] # append entries here to return

@@ -133,8 +133,12 @@ def print_safety_margin(local_map, divisions):
 
         score_map.append(vector_map)
 
+    # Apply a mask at 0
+
+    masked_scores = np.ma.masked_where(np.array(score_map) <= 0, score_map)
+
     plt.subplot(1, 2, 1)
-    plt.imshow(score_map, interpolation='nearest', cmap="RdBu")
+    plt.imshow(masked_scores, interpolation='nearest', cmap="YlGnBu")
     plt.title('Safety Margin Value Heat Map')
 
     plt.subplot(1, 2, 2)
@@ -172,7 +176,7 @@ def target_margin(self, s):
 scaling_factor = 1
 beta = 1
 cutoff_radius = 2
-threshold = 2.8*math.pi # Given these parameters, the characteristic radius is 1
+threshold = 1.2*math.pi # Given these parameters, the characteristic radius is 0.5
 local_map = gen_grid()
 
 print(local_map)

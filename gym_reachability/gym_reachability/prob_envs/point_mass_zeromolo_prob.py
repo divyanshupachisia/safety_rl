@@ -746,7 +746,7 @@ class ProbZermeloShowEnv(gym.Env):
         y = ys[idx[1]]
         state = np.array([x, y])
         traj_x, traj_y, result = self.simulate_one_trajectory(
-            q_func, T=T, state=state, toEnd=toEnd, keepOutOf = True
+            q_func, T=T, state=state, toEnd=toEnd
         )
         trajectories.append((traj_x, traj_y))
         results[idx] = result
@@ -756,7 +756,7 @@ class ProbZermeloShowEnv(gym.Env):
       results = np.empty(shape=(len(states),), dtype=int)
       for idx, state in enumerate(states):
         traj_x, traj_y, result = self.simulate_one_trajectory(
-            q_func, T=T, state=state, toEnd=toEnd, keepOutOf = True
+            q_func, T=T, state=state, toEnd=toEnd
         )
         trajectories.append((traj_x, traj_y))
         results[idx] = result

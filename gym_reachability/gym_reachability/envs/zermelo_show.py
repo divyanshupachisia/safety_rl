@@ -206,6 +206,8 @@ class ZermeloShowEnv(gym.Env):
       if sample_inside_obs:
         break
 
+    print ("Sampled initial state chosen: (" +xy_sample[0]+ ", " +xy_sample[1]+ ")") # TODO remove
+
     return xy_sample
 
   # == Dynamics ==

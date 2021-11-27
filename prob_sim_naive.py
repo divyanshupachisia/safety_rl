@@ -32,6 +32,13 @@ from RARL.config import dqnConfig
 from RARL.utils import save_obj
 from gym_reachability import gym_reachability  # Custom Gym env.
 
+# TODO remove (for Jacob's computing cluster)
+try:
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(int(torch.cuda.device_count()/2))
+    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+except:
+    print("No CUDA detected")
+
 matplotlib.use('Agg')
 simplefilter(action='ignore', category=FutureWarning)
 timestr = time.strftime("%Y-%m-%d-%H_%M")

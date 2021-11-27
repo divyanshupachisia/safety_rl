@@ -74,8 +74,8 @@ class ProbZermeloShowEnv(gym.Env):
 
     # safety_margin parameters # TODO play around with these
     self.beta = 1
-    self.cutoff_radius = 2.1
-    self.threshold = 5*3.14
+    self.cutoff_radius = 2
+    self.threshold = 1.2*math.pi
     # Given these parameters, the characteristic radius is 0.5
 
 

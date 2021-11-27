@@ -176,7 +176,7 @@ def target_margin(self, s):
 scaling_factor = 1
 beta = 1
 cutoff_radius = 2
-threshold = 1.2*math.pi # Given these parameters, the characteristic radius is 0.5
+threshold = 1.2*math.pi # Given these parameters, the characteristic radius is 0.5 (be sure to update this)
 local_map = gen_grid()
 
 print(local_map)

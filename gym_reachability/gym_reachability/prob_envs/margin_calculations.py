@@ -1,7 +1,7 @@
 import math
-from env_utils import calculate_margin_rect
+from .env_utils import calculate_margin_rect
 import numpy as np
-from utils_prob_env import gen_grid # TODO remove after testing harness finished
+from .utils_prob_env import gen_grid # TODO remove after testing harness finished
 import matplotlib.pyplot as plt
 
 def safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
@@ -23,10 +23,25 @@ def safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map):
     """
     divisions = 5
 
-    og_x, og_y = s
+    # shape of grid
+    rows,cols = local_map.shape
+
+    # og_x, og_y = s
+    og_x = s[0]
+    og_y = s[1]
 
     closest_x = int(round(og_x))
     closest_y = int(round(og_y))
+
+    # if rounding up makes it go out of bounds then round down 
+    if closest_x > rows-1: 
+        closest_x = rows-1
+    if closest_y > cols-1: 
+        closest_y = cols-1
+    if closest_x < 0: 
+        closest_x = 0
+    if closest_y < 0: 
+        closest_y = 0
 
     safety_margin = 0
 

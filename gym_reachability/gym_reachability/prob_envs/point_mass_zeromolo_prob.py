@@ -17,7 +17,9 @@ import matplotlib.pyplot as plt
 import torch
 import random
 from .env_utils import calculate_margin_rect
-
+from .utils_prob_env import gen_grid
+from .margin_calculations import safety_margin
+# from .env_utils import calculate_margin_rect, gen_grid
 
 class ProbZermeloShowEnv(gym.Env):
 
@@ -42,12 +44,17 @@ class ProbZermeloShowEnv(gym.Env):
 
     # State Bounds.
     if envType == 'basic' or envType == 'easy':
-      self.bounds = np.array([[-2, 2], [-2, 10]])
+      self.bounds = np.array([[-0.5, 9.5], [-0.5, 9.5]])
     else:
       self.bounds = np.array([[-0.5, 9.5], [-0.5, 9.5]])
     self.low = self.bounds[:, 0]
+    print("LOWER BOUND: {}".format(self.low))
     self.high = self.bounds[:, 1]
+    print("UPPER BOUND: {}".format(self.high))
     self.sample_inside_obs = sample_inside_obs
+
+    # Local Map and safety/target margin functions
+    self.local_map = gen_grid()
 
     # Time-step Parameters.
     self.time_step = 0.05
@@ -175,7 +182,7 @@ class ProbZermeloShowEnv(gym.Env):
     new_states = []
     for state in states:
       l_x = self.target_margin(state)
-      g_x = self.safety_margin(state, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = safety_margin(state, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
       new_states.append(np.append(state, max(l_x, g_x)))
     return new_states
 
@@ -211,7 +218,8 @@ class ProbZermeloShowEnv(gym.Env):
     # Repeat sampling until outside obstacle if needed.
     while inside_obs:
       xy_sample = np.random.uniform(low=self.low, high=self.high)
-      g_x = self.safety_margin(xy_sample, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = safety_margin(s = xy_sample, scaling_factor = self.scaling, beta = self.beta, 
+                          cutoff_radius = self.cutoff_radius, threshold = self.threshold, local_map = self.local_map)
       inside_obs = (g_x > 0)
       if sample_inside_obs:
         break
@@ -303,7 +311,7 @@ class ProbZermeloShowEnv(gym.Env):
     y = y + self.time_step * u[1]
 
     l_x = self.target_margin(np.array([x, y]))
-    g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+    g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
 
     if self.mode == 'extend':
       z = min(z, max(l_x, g_x))
@@ -391,6 +399,29 @@ class ProbZermeloShowEnv(gym.Env):
     if verbose:
       print("sample_inside_obs-{}".format(self.sample_inside_obs))
 
+  # == Getting Margin == 
+  def target_margin(self, s):
+    """Computes the margin (e.g. distance) between the state and the target set.
+
+    Args:
+        s (np.ndarray): the state of the agent.
+
+    Returns:
+        float: 0 or negative numbers indicate reaching the target. If the target set
+            is not specified, return None.
+    """
+    l_x_list = []
+
+    # target_set_safety_margin
+    for _, target_set in enumerate(self.target_x_y_w_h):
+      l_x = calculate_margin_rect(s, target_set, negativeInside=True)
+      l_x_list.append(l_x)
+
+    target_margin = np.max(np.array(l_x_list)) # TODO change this to the inverse formula?
+                                               # TODO, if so, ensure that the value entered into the inverse function is > -1/alpha or equivalent
+
+    return self.scaling * target_margin
+
   # == Getting Information ==
   def check_within_env(self, state):
     """Checks if the robot is still in the environment.
@@ -471,7 +502,7 @@ class ProbZermeloShowEnv(gym.Env):
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
       heuristic_v[i, :] = np.maximum(l_x, g_x)
       states[i, :] = x, y
 
@@ -518,7 +549,7 @@ class ProbZermeloShowEnv(gym.Env):
       x = xs[idx[0]]
       y = ys[idx[1]]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = self.safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
 
       if self.mode == 'normal' or self.mode == 'RA':
         state = torch.FloatTensor([x, y]).to(self.device).unsqueeze(0)
@@ -572,7 +603,7 @@ class ProbZermeloShowEnv(gym.Env):
           result = 1
           break
       else:
-        if self.safety_margin(state[:2], self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map) > 0:
+        if safety_margin(state[:2], self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map) > 0:
           result = -1  # failed
           break
         elif self.target_margin(state[:2]) <= 0:

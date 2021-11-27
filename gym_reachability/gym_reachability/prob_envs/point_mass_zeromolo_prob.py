@@ -18,7 +18,8 @@ import torch
 import random
 from .env_utils import calculate_margin_rect
 from .utils_prob_env import gen_grid
-from .margin_calculations import safety_margin
+# from .margin_calculations import safety_margin
+import math
 # from .env_utils import calculate_margin_rect, gen_grid
 
 class ProbZermeloShowEnv(gym.Env):
@@ -54,7 +55,7 @@ class ProbZermeloShowEnv(gym.Env):
     self.sample_inside_obs = sample_inside_obs
 
     # Local Map and safety/target margin functions
-    self.local_map = gen_grid()
+    self.local_map = np.transpose(gen_grid())
 
     # Time-step Parameters.
     self.time_step = 0.05
@@ -104,9 +105,9 @@ class ProbZermeloShowEnv(gym.Env):
 
     # Target Set Parameters.
     if envType == 'basic' or envType == 'easy':
-      self.target_x_y_w_h = np.array([[1.51, 4.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
     else:
-      self.target_x_y_w_h = np.array([[1.51, 4.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
 
     # Gym variables.
     self.action_space = gym.spaces.Discrete(3)  # {left, up, right}
@@ -182,7 +183,7 @@ class ProbZermeloShowEnv(gym.Env):
     new_states = []
     for state in states:
       l_x = self.target_margin(state)
-      g_x = safety_margin(state, self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = self.safety_margin(state)
       new_states.append(np.append(state, max(l_x, g_x)))
     return new_states
 
@@ -218,8 +219,7 @@ class ProbZermeloShowEnv(gym.Env):
     # Repeat sampling until outside obstacle if needed.
     while inside_obs:
       xy_sample = np.random.uniform(low=self.low, high=self.high)
-      g_x = safety_margin(s = xy_sample, scaling_factor = self.scaling, beta = self.beta, 
-                          cutoff_radius = self.cutoff_radius, threshold = self.threshold, local_map = self.local_map)
+      g_x = self.safety_margin(xy_sample)
       inside_obs = (g_x > 0)
       if sample_inside_obs:
         break
@@ -311,7 +311,7 @@ class ProbZermeloShowEnv(gym.Env):
     y = y + self.time_step * u[1]
 
     l_x = self.target_margin(np.array([x, y]))
-    g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+    g_x = self.safety_margin(np.array([x, y]))
 
     if self.mode == 'extend':
       z = min(z, max(l_x, g_x))
@@ -400,6 +400,84 @@ class ProbZermeloShowEnv(gym.Env):
       print("sample_inside_obs-{}".format(self.sample_inside_obs))
 
   # == Getting Margin == 
+  def safety_margin(self, s):
+    """Computes the safety margin . Each grid cell is further divided into 25 parts for the purposes of the calculation
+
+    Args:
+        s (np.ndarray): the state of the agent.
+        scaling_factor (positive float): the scaling factor for the environment
+        beta (positive float): the coefficient of the g function (derived from the characteristic radius)
+        cutoff_radius (positive float): only cells closer than cutoff_radius are included in the calculation
+        threshold (positive float): the threshold for the safety margin that delineates any return value > 0 as unsafe
+        local_map (2D np array of floats in [0,1]): The risk map for this environment
+
+        To create a "safety bubble" of radius R, in which there is 0 probability of an obstacle (and assuming that
+        all the space from R to cutoff_radius is an obstacle), then threshold < 2*pi*beta(cutoff_radius-R)
+
+    Returns:
+        float: positive numbers indicate being inside the failure set (safety violation).
+    """
+    divisions = 5
+    
+    # get all the parameters 
+    scaling_factor = self.scaling
+    beta = self.beta
+    cutoff_radius = self.cutoff_radius
+    threshold = self.threshold
+    local_map = self.local_map
+
+    # shape of grid
+    rows,cols = local_map.shape
+
+    # og_x, og_y = s
+    og_x = s[0]
+    og_y = s[1]
+
+    closest_x = int(round(og_x))
+    closest_y = int(round(og_y))
+
+    # if rounding up makes it go out of bounds then round down 
+    if closest_x > rows-1: 
+        closest_x = rows-1
+    if closest_y > cols-1: 
+        closest_y = cols-1
+    if closest_x < 0: 
+        closest_x = 0
+    if closest_y < 0: 
+        closest_y = 0
+
+    safety_margin = 0
+
+    # Add the current grid value to safety margin
+    safety_margin = safety_margin + threshold*local_map[closest_x, closest_y]/(divisions*divisions)
+
+    square_count = 1
+
+    for i in np.arange(og_x-cutoff_radius, og_x+cutoff_radius+(1/divisions), 1/divisions):
+        for j in np.arange(og_y-cutoff_radius, og_y+cutoff_radius+(1/divisions), 1/divisions):
+
+            grid_distance = math.sqrt(float(((closest_x-i)*(closest_x-i)) + ((closest_y-j)*(closest_y-j))))
+            actual_distance = math.sqrt(float(((og_x-i)*(og_x-i)) + ((og_y-j)*(og_y-j))))
+
+            closest_i = int(round(i))
+            closest_j = int(round(j))
+
+            if (closest_x != closest_i or closest_y != closest_j) and actual_distance <= cutoff_radius: # Exclude the original cell and all cells farther from the distance
+
+                square_count += 1
+
+                # Inside the boundary
+                if closest_i >= 0 and closest_i < len(local_map) and closest_j >= 0 and closest_j < len(local_map[0]):
+                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*local_map[closest_i][closest_j]/(divisions*divisions)
+
+                # Outside the boundary or on the boundary line
+                else:
+                    safety_margin = safety_margin + (beta*1/(actual_distance + (beta/threshold)))*1/(divisions*divisions)
+
+    adjusted_margin = scaling_factor*(safety_margin-threshold)
+
+    return adjusted_margin
+  
   def target_margin(self, s):
     """Computes the margin (e.g. distance) between the state and the target set.
 
@@ -502,7 +580,7 @@ class ProbZermeloShowEnv(gym.Env):
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = self.safety_margin(np.array([x, y]))
       heuristic_v[i, :] = np.maximum(l_x, g_x)
       states[i, :] = x, y
 
@@ -549,7 +627,7 @@ class ProbZermeloShowEnv(gym.Env):
       x = xs[idx[0]]
       y = ys[idx[1]]
       l_x = self.target_margin(np.array([x, y]))
-      g_x = safety_margin(np.array([x, y]), self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map)
+      g_x = self.safety_margin(np.array([x, y]))
 
       if self.mode == 'normal' or self.mode == 'RA':
         state = torch.FloatTensor([x, y]).to(self.device).unsqueeze(0)
@@ -603,7 +681,7 @@ class ProbZermeloShowEnv(gym.Env):
           result = 1
           break
       else:
-        if safety_margin(state[:2], self.scaling, self.beta, self.cutoff_radius, self.threshold, self.local_map) > 0:
+        if self.safety_margin(state[:2]) > 0:
           result = -1  # failed
           break
         elif self.target_margin(state[:2]) <= 0:
@@ -668,7 +746,7 @@ class ProbZermeloShowEnv(gym.Env):
         y = ys[idx[1]]
         state = np.array([x, y])
         traj_x, traj_y, result = self.simulate_one_trajectory(
-            q_func, T=T, state=state, toEnd=toEnd
+            q_func, T=T, state=state, toEnd=toEnd, keepOutOf = True
         )
         trajectories.append((traj_x, traj_y))
         results[idx] = result
@@ -678,7 +756,7 @@ class ProbZermeloShowEnv(gym.Env):
       results = np.empty(shape=(len(states),), dtype=int)
       for idx, state in enumerate(states):
         traj_x, traj_y, result = self.simulate_one_trajectory(
-            q_func, T=T, state=state, toEnd=toEnd
+            q_func, T=T, state=state, toEnd=toEnd, keepOutOf = True
         )
         trajectories.append((traj_x, traj_y))
         results[idx] = result
@@ -717,7 +795,7 @@ class ProbZermeloShowEnv(gym.Env):
     self.plot_target_failure_set(ax)
 
     # == Plot reach-avoid set ==
-    self.plot_reach_avoid_set(ax)
+    # self.plot_reach_avoid_set(ax)
 
     # == Plot V ==
     self.plot_v_values(

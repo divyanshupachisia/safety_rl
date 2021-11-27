@@ -64,6 +64,7 @@ parser.add_argument(
 parser.add_argument(
     "-w", "--warmup", help="warmup Q-network", action="store_true"
 )
+# TODO: change default back to 2000
 parser.add_argument(
     "-wi", "--warmupIter", help="warmup iteration", default=2000, type=int
 )
@@ -77,6 +78,7 @@ parser.add_argument(
 parser.add_argument(
     "-mc", "--memoryCapacity", help="memoryCapacity", default=10000, type=int
 )
+# TODO: change default back to 20000
 parser.add_argument(
     "-cp", "--checkPeriod", help="check period", default=20000, type=int
 )
@@ -126,10 +128,16 @@ print(args)
 # == CONFIGURATION ==
 env_name = "prob_zermelo_show-v0"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#TODO: change back to default
 maxUpdates = args.maxUpdates
+# print("MAX UPDATES: {}".format(maxUpdates))
+# maxUpdates = 40
 updateTimes = args.updateTimes
+# print("UPDATE TIMES: {}".format(updateTimes))
+# updateTimes = 10
 updatePeriod = int(maxUpdates / updateTimes)
 maxSteps = 250
+# maxSteps = 5
 storeFigure = args.storeFigure
 plotFigure = args.plotFigure
 
@@ -248,7 +256,7 @@ if plotFigure or storeFigure:
       v.T, interpolation='none', extent=axStyle[0], origin="lower",
       cmap="seismic", vmin=vmin, vmax=vmax
   )
-  env.plot_reach_avoid_set(ax)
+#   env.plot_reach_avoid_set(ax)
   cbar = fig.colorbar(
       im, ax=ax, pad=0.01, fraction=0.05, shrink=.95, ticks=[vmin, 0, vmax]
   )
@@ -341,7 +349,9 @@ if plotFigure or storeFigure:
   ax.set_xticklabels(np.linspace(0, maxUpdates, 5) / 1e5)
   ax.set_title('loss_critic', fontsize=18)
   ax.set_xlim(left=0, right=maxUpdates)
-
+  
+  print("TRAIN PROGRESS")
+  print(trainProgress)
   data = trainProgress[:, 0]
   ax = axes[1]
   x = np.arange(data.shape[0]) + 1
@@ -431,7 +441,7 @@ if plotFigure or storeFigure:
 
   for ax in axes:
     env.plot_target_failure_set(ax=ax)
-    env.plot_reach_avoid_set(ax=ax)
+    # env.plot_reach_avoid_set(ax=ax)
     env.plot_formatting(ax=ax)
 
   fig.tight_layout()

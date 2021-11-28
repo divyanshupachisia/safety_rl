@@ -139,12 +139,23 @@ def print_safety_margin(local_map, divisions):
     """
 
     score_map = []
+    below_zero = 0
+    total = 0
 
     for i in np.arange(-0.49, len(local_map)-0.51, 1/divisions):
 
         vector_map = []
         for j in np.arange(-0.49, len(local_map[0])-0.51, 1/divisions):
-            vector_map.append(-1*safety_margin([i, j], scaling_factor, beta, cutoff_radius, threshold, local_map))
+
+            margin = safety_margin([i, j], scaling_factor, beta, cutoff_radius, threshold, local_map)
+            vector_map.append(-1*margin)
+
+            if margin <= 0:
+
+                below_zero += 1
+
+            total += 1
+
 
         score_map.append(vector_map)
 
@@ -162,6 +173,8 @@ def print_safety_margin(local_map, divisions):
 
     plt.tight_layout()
     plt.show()
+
+    print(str(below_zero/total))
 
 def target_margin(self, s):
     """Computes the margin (e.g. distance) between the state and the target set.

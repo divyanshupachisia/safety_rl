@@ -79,7 +79,6 @@ class ProbZermeloShowEnv(gym.Env):
     self.threshold = 1.2*math.pi
     # Given these parameters, the characteristic radius is 0.5
 
-
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]
     # if envType == 'basic':
@@ -142,22 +141,20 @@ class ProbZermeloShowEnv(gym.Env):
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.array([0, 0]),
-          np.array([-1, -2]),
-          np.array([1, -2]),
-          np.array([-1, 4]),
-          np.array([1, 4]),
+          np.array([4.0, 1.0]),
+          np.array([4.0, 2.0]),
+          np.array([3.0, 3.0]),
+          np.array([2.0, 4.0]),
       ]
+
     else:
       self.visual_initial_states = [
-          np.array([0., 0.]),
-          np.array([-1., 0.]),
-          np.array([1., 0.]),
-          np.array([-2.5, 0.]),
-          np.array([2.5, 0.]),
-          np.array([-1., 2.5]),
-          np.array([1., 2.5])
+        np.array([4.0, 1.0]),
+        np.array([4.0, 2.0]),
+        np.array([3.0, 3.0]),
+        np.array([2.0, 4.0]),
       ]
+
     if mode == 'extend':
       self.visual_initial_states = \
           self.extend_state(self.visual_initial_states)
@@ -779,8 +776,8 @@ class ProbZermeloShowEnv(gym.Env):
         q_func (object): agent's Q-network.
         vmin (int, optional): vmin in colormap. Defaults to -1.
         vmax (int, optional): vmax in colormap. Defaults to 1.
-        nx (int, optional): # points in x-axis. Defaults to 41.
-        ny (int, optional): # points in y-axis. Defaults to 121.
+        nx (int, optional): # points in x-axis. Defaults to 201.
+        ny (int, optional): # points in y-axis. Defaults to 201.
         labels (list, optional): x- and y- labels. Defaults to None.
         boolPlot (bool, optional): plot the values in binary form if True.
             Defaults to False.

@@ -71,7 +71,6 @@ parser.add_argument(
 parser.add_argument(
     "-w", "--warmup", help="warmup Q-network", action="store_true"
 )
-# TODO: change default back to 2000
 parser.add_argument(
     "-wi", "--warmupIter", help="warmup iteration", default=2000, type=int
 )
@@ -85,7 +84,6 @@ parser.add_argument(
 parser.add_argument(
     "-mc", "--memoryCapacity", help="memoryCapacity", default=10000, type=int
 )
-# TODO: change default back to 20000
 parser.add_argument(
     "-cp", "--checkPeriod", help="check period", default=20000, type=int
 )
@@ -135,7 +133,6 @@ print(args)
 # == CONFIGURATION ==
 env_name = "prob_zermelo_show-v0"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#TODO: change back to default
 maxUpdates = args.maxUpdates
 # print("MAX UPDATES: {}".format(maxUpdates))
 # maxUpdates = 40

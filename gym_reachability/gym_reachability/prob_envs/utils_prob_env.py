@@ -66,7 +66,7 @@ def get_local_map(R, grid, cur_pos):
 Return a low dimensional representation of the local grid around the current position.
 cur_pos is a tuple (i,j)
 '''
-def conv_grid(cur_pos,filter=None, R=2): 
+def conv_grid(cur_pos,filter=None, R=2):
     default_filter = [[1,1,1],[1,1,1],[1,1,1]]
     # if None then set to default
     if filter is None:
@@ -76,6 +76,7 @@ def conv_grid(cur_pos,filter=None, R=2):
     cur_y = int(round(cur_pos[1]))
     local_grid = grid[cur_x-R:cur_x+R,cur_y-R:cur_y+R]
     conv = scipy.signal.convolve(filter, local_grid, mode='valid')
+    states = conv.flatten()
     return states
 
 # for testing

@@ -54,9 +54,6 @@ class ProbZermeloShowEnv(gym.Env):
     print("UPPER BOUND: {}".format(self.high))
     self.sample_inside_obs = sample_inside_obs
 
-    # Local Map and safety/target margin functions
-    self.local_map = np.transpose(gen_grid())
-
     # Time-step Parameters.
     self.time_step = 0.05
 
@@ -70,14 +67,18 @@ class ProbZermeloShowEnv(gym.Env):
         -self.horizontal_rate, self.upward_speed
     ], [0, self.upward_speed], [self.horizontal_rate, self.upward_speed]])
 
-    # local_map parameters
-    # TODO complete me
-
     # safety_margin parameters # TODO play around with these
     self.beta = 1
     self.cutoff_radius = 2
     self.threshold = 1.2*math.pi
     # Given these parameters, the characteristic radius is 0.5
+
+    # Convolution filter
+
+    filter = [[1,1,1],[1,1,1],[1,1,1]]
+
+    # Local Map
+    self.local_map = np.transpose(gen_grid())
 
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]

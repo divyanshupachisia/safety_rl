@@ -30,7 +30,7 @@ import torch
 from RARL.DDQNSingle import DDQNSingle
 from RARL.config import dqnConfig
 from RARL.utils import save_obj
-from gym_reachability import gym_reachability  # Custom Gym env.
+from gym_reachability.gym_reachability.prob_envs.utils_prob_env import *
 
 # TODO remove (for Jacob's computing cluster)
 try:
@@ -396,7 +396,7 @@ if plotFigure or storeFigure:
     x = xs[idx[0]]
     y = ys[idx[1]]
 
-    state = np.array([x, y])
+    state = np.append([x, y], conv_grid(cur_pos=[x, y], filter=env.filter, R=env.conv_radius, slide=env.slide))
     stateTensor = torch.FloatTensor(state).to(agent.device).unsqueeze(0)
     action_index = agent.Q_network(stateTensor).min(dim=1)[1].cpu().item()
     # u = env.discrete_controls[action_index]

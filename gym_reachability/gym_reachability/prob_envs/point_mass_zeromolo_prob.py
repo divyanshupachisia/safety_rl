@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import torch
 import random
 from .env_utils import calculate_margin_rect
-from .utils_prob_env import gen_grid
+from .utils_prob_env import *
 # from .margin_calculations import safety_margin
 import math
 # from .env_utils import calculate_margin_rect, gen_grid
@@ -67,18 +67,25 @@ class ProbZermeloShowEnv(gym.Env):
         -self.horizontal_rate, self.upward_speed
     ], [0, self.upward_speed], [self.horizontal_rate, self.upward_speed]])
 
-    # safety_margin parameters # TODO play around with these
+    # safety_margin parameters #
     self.beta = 1
     self.cutoff_radius = 2
     self.threshold = 1.2*math.pi
     # Given these parameters, the characteristic radius is 0.5
 
-    # Convolution filter
-
-    filter = [[1,1,1],[1,1,1],[1,1,1]]
-
     # Local Map
     self.local_map = np.transpose(gen_grid())
+
+    # Convolution filter
+    self.conv_radius = 2
+    self.filter = [[1,1,1],[1,1,1],[1,1,1]]
+    self.slide = 1 # TODO put this in convolve function
+    self.width_conv_filter_dimension = math.ceil((len(self.local_map)-len(filter)+1)/slide) # TODO ask Divy to check this
+    self.height_conv_filter_dimension = math.ceil((len(self.local_map[0])-len(filter[0])+1)/slide) #TODO ask Divy to check this
+
+    self.conv_states_count = self.width_conv_filter_dimension * self.height_conv_filter_dimension
+
+    assert(len(conv_grid(cur_pos=[0, 0], filter=self.filter, R=self.conv_radius, slide=self.slide)) == self.conv_states_count) # TODO remove this
 
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]
@@ -132,9 +139,9 @@ class ProbZermeloShowEnv(gym.Env):
     # mode: normal or extend (keep track of ell & g)
     self.mode = mode
     if mode == 'extend':
-      self.state = np.zeros(3)
+      self.state = np.zeros(3+self.conv_states_count)
     else:
-      self.state = np.zeros(2)
+      self.state = np.zeros(2+self.conv_states_count)
     self.doneType = doneType
 
     # Visualization Parameters
@@ -142,18 +149,18 @@ class ProbZermeloShowEnv(gym.Env):
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.array([4.0, 1.0]),
-          np.array([4.0, 2.0]),
-          np.array([3.0, 3.0]),
-          np.array([2.0, 4.0]),
+          np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+          np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+          np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+          np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
       ]
 
     else:
       self.visual_initial_states = [
-        np.array([4.0, 1.0]),
-        np.array([4.0, 2.0]),
-        np.array([3.0, 3.0]),
-        np.array([2.0, 4.0]),
+        np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+        np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+        np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+        np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
       ]
 
     if mode == 'extend':
@@ -204,7 +211,7 @@ class ProbZermeloShowEnv(gym.Env):
     return np.copy(self.state)
 
   def sample_random_state(self, sample_inside_obs=False):
-    """Picks the state uniformly at random.
+    """Picks the state uniformly at random. NEW*** Includes the convolved grid state
 
     Args:
         sample_inside_obs (bool, optional): consider sampling the state inside
@@ -217,12 +224,13 @@ class ProbZermeloShowEnv(gym.Env):
     # Repeat sampling until outside obstacle if needed.
     while inside_obs:
       xy_sample = np.random.uniform(low=self.low, high=self.high)
+      new_state = np.append(xy_sample, conv_grid(cur_pos=xy_sample, filter=self.filter, R=self.conv_radius, slide=self.slide))
       g_x = self.safety_margin(xy_sample)
       inside_obs = (g_x > 0)
       if sample_inside_obs:
         break
 
-    return xy_sample
+    return new_state
 
   # == Dynamics ==
   def step(self, action):
@@ -292,6 +300,7 @@ class ProbZermeloShowEnv(gym.Env):
 
     Args:
         state (np.ndarray): x, y - position
+                            [a, b, c, ....] flattened states from convolution
                             [z]  - optional, extra state dimension
                                 capturing reach-avoid outcome so far)
         u (np.ndarray): contol inputs, consisting of v_x and v_y
@@ -300,7 +309,8 @@ class ProbZermeloShowEnv(gym.Env):
         np.ndarray: next state.
     """
     if self.mode == 'extend':
-      x, y, z = state
+      x, y = state[0:2]
+      z = state[-1]
     else:
       x, y = state
 
@@ -311,11 +321,15 @@ class ProbZermeloShowEnv(gym.Env):
     l_x = self.target_margin(np.array([x, y]))
     g_x = self.safety_margin(np.array([x, y]))
 
+    # Obtain next convolution
+
+    conv_states = np.array(conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide))
+
+    state = np.append([x, y], conv_states)
+
     if self.mode == 'extend':
       z = min(z, max(l_x, g_x))
-      state = np.array([x, y, z])
-    else:
-      state = np.array([x, y])
+      state = np.append(state, [z])
 
     info = np.array([l_x, g_x])
 
@@ -577,10 +591,11 @@ class ProbZermeloShowEnv(gym.Env):
 
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]
+      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
       l_x = self.target_margin(np.array([x, y]))
       g_x = self.safety_margin(np.array([x, y]))
       heuristic_v[i, :] = np.maximum(l_x, g_x)
-      states[i, :] = x, y
+      states[i, :] = np.append([x, y], conv_states)
 
     return states, heuristic_v
 
@@ -624,14 +639,15 @@ class ProbZermeloShowEnv(gym.Env):
 
       x = xs[idx[0]]
       y = ys[idx[1]]
+      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
       l_x = self.target_margin(np.array([x, y]))
       g_x = self.safety_margin(np.array([x, y]))
 
       if self.mode == 'normal' or self.mode == 'RA':
-        state = torch.FloatTensor([x, y]).to(self.device).unsqueeze(0)
+        state = torch.FloatTensor(np.append([x, y], conv_states)).to(self.device).unsqueeze(0)
       else:
         z = max([l_x, g_x])
-        state = torch.FloatTensor([x, y, z]).to(self.device).unsqueeze(0)
+        state = torch.FloatTensor(np.append([x, y], conv_states, [z])).to(self.device).unsqueeze(0)
 
       if addBias:
         v[idx] = q_func(state).min(dim=1)[0].item() + max(l_x, g_x)
@@ -742,7 +758,8 @@ class ProbZermeloShowEnv(gym.Env):
         print(idx, end='\r')
         x = xs[idx[0]]
         y = ys[idx[1]]
-        state = np.array([x, y])
+        conv_state = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
+        state = np.append([x, y], conv_state)
         traj_x, traj_y, result = self.simulate_one_trajectory(
             q_func, T=T, state=state, toEnd=toEnd
         )

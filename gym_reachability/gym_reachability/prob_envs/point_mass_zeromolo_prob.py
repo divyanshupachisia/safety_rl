@@ -80,8 +80,8 @@ class ProbZermeloShowEnv(gym.Env):
     self.conv_radius = 2
     self.filter = [[1,1,1],[1,1,1],[1,1,1]]
     self.slide = 1 # TODO put this in convolve function
-    self.width_conv_filter_dimension = math.ceil((len(self.local_map)-len(filter)+1)/slide) # TODO ask Divy to check this
-    self.height_conv_filter_dimension = math.ceil((len(self.local_map[0])-len(filter[0])+1)/slide) #TODO ask Divy to check this
+    self.width_conv_filter_dimension = math.ceil((len(self.local_map)-len(filter)+1)/self.slide) # TODO ask Divy to check this
+    self.height_conv_filter_dimension = math.ceil((len(self.local_map[0])-len(filter[0])+1)/self.slide) #TODO ask Divy to check this
 
     self.conv_states_count = self.width_conv_filter_dimension * self.height_conv_filter_dimension
 

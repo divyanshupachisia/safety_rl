@@ -239,3 +239,5 @@ for i in np.arange(4, 5, 0.05):
         print("State: [" + str(s[0]) + ", " + str(s[1]) + "] Value: " + str(
             safety_margin(s, scaling_factor, beta, cutoff_radius, threshold, local_map)))
 
+
+

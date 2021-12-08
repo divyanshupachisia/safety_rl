@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal
 
 '''
 Generate a 10 by 10 grid with values between 0 and 1 at each index
@@ -61,6 +62,21 @@ def get_local_map(R, grid, cur_pos):
                     local_map.append(grid[i][j])
     return local_map  
 
+'''
+Return a low dimensional representation of the local grid around the current position.
+cur_pos is a tuple (i,j)
+'''
+def conv_grid(cur_pos,filter=None, R=2): 
+    default_filter = [[1,1,1],[1,1,1],[1,1,1]]
+    # if None then set to default
+    if filter is None:
+        filter = default_filter
+    grid = gen_grid()
+    cur_x = int(round(cur_pos[0]))
+    cur_y = int(round(cur_pos[1]))
+    local_grid = grid[cur_x-R:cur_x+R,cur_y-R:cur_y+R]
+    conv = scipy.signal.convolve(filter, local_grid, mode='valid')
+    return states
+
 # for testing
-grid = gen_grid()
-local_map = get_local_map(2, grid, (0.3,0.6))
+state = conv_grid(cur_pos=(3.2,3.2))

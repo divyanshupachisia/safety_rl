@@ -93,7 +93,7 @@ parser.add_argument(
     "-a", "--annealing", help="gamma annealing", action="store_true"
 )
 parser.add_argument(
-    "-arc", "--architecture", help="NN architecture", default=[100, 20],
+    "-arc", "--architecture", help="NN architecture", default=[200, 40, 20], # TODO change back to [100, 20]
     nargs="*", type=int
 )
 parser.add_argument(

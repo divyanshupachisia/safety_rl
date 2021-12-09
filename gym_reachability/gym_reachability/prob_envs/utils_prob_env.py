@@ -66,7 +66,8 @@ def get_local_map(R, grid, cur_pos):
 Return a low dimensional representation of the local grid around the current position.
 cur_pos is a tuple (i,j)
 '''
-def conv_grid(cur_pos,filter=None, R=2): 
+def conv_grid(cur_pos,filter=None, R=2, stride = 1): 
+    # TODO: implement changing stride 
     default_filter = [[1,1,1],[1,1,1],[1,1,1]]
     # if None then set to default
     if filter is None:

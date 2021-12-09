@@ -112,9 +112,9 @@ class ProbZermeloShowEnv(gym.Env):
 
     # Target Set Parameters.
     if envType == 'basic' or envType == 'easy':
-      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.5, 9, 5, 0.8]])
     else:
-      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.5, 9, 5, 0.8]])
 
     # Gym variables.
     self.action_space = gym.spaces.Discrete(3)  # {left, up, right}
@@ -149,18 +149,18 @@ class ProbZermeloShowEnv(gym.Env):
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-          np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-          np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-          np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([0.0, 0.0], conv_grid(cur_pos=[0.0, 0.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([8.0, 0.0], conv_grid(cur_pos=[8.0, 0.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([4.5, 2.1], conv_grid(cur_pos=[4.5, 2.1], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([9.0, 6.0], conv_grid(cur_pos=[9.0, 6.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
       ]
 
     else:
       self.visual_initial_states = [
-        np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-        np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-        np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
-        np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([0.0, 0.0], conv_grid(cur_pos=[0.0, 0.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([8.0, 0.0], conv_grid(cur_pos=[8.0, 0.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([4.5, 2.1], conv_grid(cur_pos=[4.5, 2.1], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([9.0, 6.0], conv_grid(cur_pos=[9.0, 6.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
       ]
 
     if mode == 'extend':

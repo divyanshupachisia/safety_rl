@@ -79,13 +79,13 @@ class ProbZermeloShowEnv(gym.Env):
     # Convolution filter
     self.conv_radius = 2
     self.filter = [[1,1,1],[1,1,1],[1,1,1]]
-    self.slide = 1 # TODO put this in convolve function
-    self.width_conv_filter_dimension = math.ceil((len(self.local_map)-len(self.filter)+1)/self.slide) # TODO ask Divy to check this
-    self.height_conv_filter_dimension = math.ceil((len(self.local_map[0])-len(self.filter[0])+1)/self.slide) #TODO ask Divy to check this
+    self.stride = 1 # TODO put this in convolve function
+    self.width_conv_filter_dimension = math.ceil((len(self.local_map)-len(self.filter)+1)/self.stride) # TODO ask Divy to check this
+    self.height_conv_filter_dimension = math.ceil((len(self.local_map[0])-len(self.filter[0])+1)/self.stride) #TODO ask Divy to check this
 
     self.conv_states_count = self.width_conv_filter_dimension * self.height_conv_filter_dimension
 
-    assert(len(conv_grid(cur_pos=[0, 0], filter=self.filter, R=self.conv_radius, slide=self.slide)) == self.conv_states_count) # TODO remove this
+    assert(len(conv_grid(cur_pos=[0, 0], filter=self.filter, R=self.conv_radius, stride=self.stride)) == self.conv_states_count) # TODO remove this
 
     # Constraint Set Parameters.
     # [X-position, Y-position, width, height]
@@ -149,18 +149,18 @@ class ProbZermeloShowEnv(gym.Env):
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-          np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-          np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-          np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+          np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+          np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
       ]
 
     else:
       self.visual_initial_states = [
-        np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-        np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-        np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
-        np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, slide=self.slide)),
+        np.append([4.0, 1.0], conv_grid(cur_pos=[4.0, 1.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([4.0, 2.0], conv_grid(cur_pos=[4.0, 2.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([3.0, 3.0], conv_grid(cur_pos=[3.0, 3.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
+        np.append([2.0, 4.0], conv_grid(cur_pos=[2.0, 4.0], filter=self.filter, R=self.conv_radius, stride=self.stride)),
       ]
 
     if mode == 'extend':
@@ -224,7 +224,7 @@ class ProbZermeloShowEnv(gym.Env):
     # Repeat sampling until outside obstacle if needed.
     while inside_obs:
       xy_sample = np.random.uniform(low=self.low, high=self.high)
-      new_state = np.append(xy_sample, conv_grid(cur_pos=xy_sample, filter=self.filter, R=self.conv_radius, slide=self.slide))
+      new_state = np.append(xy_sample, conv_grid(cur_pos=xy_sample, filter=self.filter, R=self.conv_radius, stride=self.stride))
       g_x = self.safety_margin(xy_sample)
       inside_obs = (g_x > 0)
       if sample_inside_obs:
@@ -323,7 +323,7 @@ class ProbZermeloShowEnv(gym.Env):
 
     # Obtain next convolution
 
-    conv_states = np.array(conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide))
+    conv_states = np.array(conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, stride=self.stride))
 
     state = np.append([x, y], conv_states)
 
@@ -591,7 +591,7 @@ class ProbZermeloShowEnv(gym.Env):
 
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]
-      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
+      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, stride=self.stride)
       l_x = self.target_margin(np.array([x, y]))
       g_x = self.safety_margin(np.array([x, y]))
       heuristic_v[i, :] = np.maximum(l_x, g_x)
@@ -639,7 +639,7 @@ class ProbZermeloShowEnv(gym.Env):
 
       x = xs[idx[0]]
       y = ys[idx[1]]
-      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
+      conv_states = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, stride=self.stride)
       l_x = self.target_margin(np.array([x, y]))
       g_x = self.safety_margin(np.array([x, y]))
 
@@ -758,7 +758,7 @@ class ProbZermeloShowEnv(gym.Env):
         print(idx, end='\r')
         x = xs[idx[0]]
         y = ys[idx[1]]
-        conv_state = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, slide=self.slide)
+        conv_state = conv_grid(cur_pos=[x, y], filter=self.filter, R=self.conv_radius, stride=self.stride)
         state = np.append([x, y], conv_state)
         traj_x, traj_y, result = self.simulate_one_trajectory(
             q_func, T=T, state=state, toEnd=toEnd

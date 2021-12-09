@@ -39,9 +39,9 @@ def gen_grid():
 '''
 Given a sensing radius, R, the current robot position, cur_pos, and a grid environment 
 return the subset of the grid environment as a vector that falls within the sensing radius
-cur_pos is a tuple (i,j)
+cur_pos is a tuple (i,j).
 '''
-def get_local_map(R, grid, cur_pos):
+def get_local_map(R, grid, cur_pos, slide):
 
     # get the position
     x_pos = int(round(cur_pos[0]))

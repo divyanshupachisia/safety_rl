@@ -66,18 +66,41 @@ def get_local_map(R, grid, cur_pos):
 Return a low dimensional representation of the local grid around the current position.
 cur_pos is a tuple (i,j)
 '''
-def conv_grid(cur_pos,filter=None, R=2):
+def conv_grid(cur_pos,filter=None, R=2): 
     default_filter = [[1,1,1],[1,1,1],[1,1,1]]
     # if None then set to default
     if filter is None:
         filter = default_filter
     grid = gen_grid()
-    cur_x = int(round(cur_pos[0]))
-    cur_y = int(round(cur_pos[1]))
-    local_grid = grid[cur_x-R:cur_x+R,cur_y-R:cur_y+R]
+
+    x_pos= int(round(cur_pos[0]))
+    y_pos = int(round(cur_pos[1]))
+
+    # define square you need to iterate over
+    x_range_low = x_pos - R
+    x_range_high = x_pos + R
+    y_range_low = y_pos - R 
+    y_range_high = y_pos + R
+
+    local_grid = [] # append entries here to return
+
+    row, col = grid.shape # to check if we're out of bounds
+
+    for i in range(x_range_low, x_range_high+1):
+        cur_row = [] 
+        for j in range(y_range_low, y_range_high+1):
+            # check if you're out of bounds and if so append 1 (obstacle)
+            if i < 0 or i > row-1 or j < 0 or j > col-1: 
+                cur_row.append(1)
+            # append value of grid if you're not out of bounds and are within R
+            else: 
+                cur_row.append(grid[i][j])
+        local_grid.append(cur_row)
+
     conv = scipy.signal.convolve(filter, local_grid, mode='valid')
     states = conv.flatten()
     return states
 
 # for testing
-state = conv_grid(cur_pos=(3.2,3.2))
+state = conv_grid(cur_pos=(1,1))
+print(state)

@@ -587,7 +587,7 @@ class ProbZermeloShowEnv(gym.Env):
     xs = np.random.uniform(x_min, x_max, num_warmup_samples)
     ys = np.random.uniform(y_min, y_max, num_warmup_samples)
     heuristic_v = np.zeros((num_warmup_samples, self.action_space.n))
-    states = np.zeros((num_warmup_samples, self.observation_space.shape[0]))
+    states = np.zeros((num_warmup_samples, len(self.state))) #TODO change this back?
 
     for i in range(num_warmup_samples):
       x, y = xs[i], ys[i]

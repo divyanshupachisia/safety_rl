@@ -77,11 +77,11 @@ class ProbZermeloShowEnv(gym.Env):
     self.local_map = np.transpose(gen_grid())
 
     # Convolution filter
-    self.conv_radius = 2
+    self.conv_radius = 2 # Side length of visibility square is 2*conv_radius+1
     self.filter = [[1,1,1],[1,1,1],[1,1,1]]
     self.stride = 1 # TODO put this in convolve function
-    self.width_conv_filter_dimension = math.ceil(((2*self.conv_radius)-len(self.filter)+1)/self.stride) # TODO ask Divy to check this
-    self.height_conv_filter_dimension = math.ceil(((2*self.conv_radius)-len(self.filter[0])+1)/self.stride) #TODO ask Divy to check this
+    self.width_conv_filter_dimension = math.ceil(((2*self.conv_radius+1)-len(self.filter)+1)/self.stride) # TODO ask Divy to check this
+    self.height_conv_filter_dimension = math.ceil(((2*self.conv_radius+1)-len(self.filter[0])+1)/self.stride) #TODO ask Divy to check this
 
     self.conv_states_count = self.width_conv_filter_dimension * self.height_conv_filter_dimension
 

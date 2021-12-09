@@ -75,7 +75,7 @@ parser.add_argument(
     "-wi", "--warmupIter", help="warmup iteration", default=2000, type=int
 )
 parser.add_argument(
-    "-mu", "--maxUpdates", help="maximal #gradient updates", default=400000,
+    "-mu", "--maxUpdates", help="maximal #gradient updates", default=1200000, # TODO change this back to 400000
     type=int
 )
 parser.add_argument(

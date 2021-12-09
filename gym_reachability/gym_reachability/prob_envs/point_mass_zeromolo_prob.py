@@ -312,7 +312,7 @@ class ProbZermeloShowEnv(gym.Env):
       x, y = state[0:2]
       z = state[-1]
     else:
-      x, y = state
+      x, y = state[0:2]
 
     # one step forward
     x = x + self.time_step * u[0]

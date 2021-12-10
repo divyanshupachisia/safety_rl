@@ -131,7 +131,7 @@ args = parser.parse_args()
 print(args)
 
 # == CONFIGURATION ==
-env_name = "prob_zermelo_show-v0_curvy" # TODO change this for original environment
+env_name = "prob_zermelo_show_curvy-v0" # TODO change this for original environment
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 maxUpdates = args.maxUpdates
 # print("MAX UPDATES: {}".format(maxUpdates))

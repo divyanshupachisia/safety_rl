@@ -46,6 +46,6 @@ register(
 )
 
 register(
-    id="prob_zermelo_show-v0_curvy",
+    id="prob_zermelo_show_curvy-v0",
     entry_point="gym_reachability.gym_reachability.prob_envs:ProbZermeloShowEnvCurvy"
 )

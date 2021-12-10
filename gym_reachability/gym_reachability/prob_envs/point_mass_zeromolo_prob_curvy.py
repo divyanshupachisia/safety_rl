@@ -64,7 +64,7 @@ class ProbZermeloShowEnvCurvy(gym.Env):
             self.upward_speed = 2.
         else:
             self.upward_speed = .5
-        self.horizontal_rate = 1  # TODO Change back to 1.5 ???
+        self.horizontal_rate = 1.5  # TODO Change back to 1
         self.discrete_controls = np.array([[
             -self.horizontal_rate, self.upward_speed
         ], [0, self.upward_speed], [self.horizontal_rate, self.upward_speed]])

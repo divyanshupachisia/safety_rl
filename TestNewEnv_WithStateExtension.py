@@ -302,7 +302,7 @@ print("We want to use: {}, and Agent uses: {}".format(device, agent.device))
 print("Critic is using cuda: ", next(agent.Q_network.parameters()).is_cuda)
 
 # Load model
-updates = 380000
+updates = 1200000
 agent.restore(updates, r"/home/jambrown/RL_Learning/safety_rl/experiments/naive/DDQN/RA/-toEnd")
 
 # Simulate trajectories on new environment

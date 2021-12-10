@@ -5,3 +5,5 @@ Authors: Kai-Chieh Hsu ( kaichieh@princeton.edu )
 """
 
 from .point_mass_zeromolo_prob import ProbZermeloShowEnv
+
+from .point_mass_zeromolo_prob_curvy import ProbZermeloShowEnvCurvy

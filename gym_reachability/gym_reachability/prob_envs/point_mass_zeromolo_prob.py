@@ -74,7 +74,7 @@ class ProbZermeloShowEnv(gym.Env):
     # Given these parameters, the characteristic radius is 0.5
 
     # Local Map
-    self.local_map = np.transpose(gen_grid())
+    self.local_map = np.transpose(gen_grid(type="three_blocks"))
 
     # Convolution filter
     self.conv_radius = 2 # Side length of visibility square is 2*conv_radius+1

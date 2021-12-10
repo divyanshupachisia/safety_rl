@@ -44,3 +44,8 @@ register(
     id="prob_zermelo_show-v0",
     entry_point="gym_reachability.gym_reachability.prob_envs:ProbZermeloShowEnv"
 )
+
+register(
+    id="prob_zermelo_show-v0_curvy",
+    entry_point="gym_reachability.gym_reachability.prob_envs:ProbZermeloShowEnvCurvy"
+)

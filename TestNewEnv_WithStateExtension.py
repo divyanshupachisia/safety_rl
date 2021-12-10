@@ -303,7 +303,7 @@ print("Critic is using cuda: ", next(agent.Q_network.parameters()).is_cuda)
 
 # Load model
 updates = 380000
-agent.restore(updates+1, r"/home/jambrown/RL_Learning/safety_rl/experiments/naive/DDQN/RA/-toEnd/model/Q-1200000.pth")
+agent.restore(updates, r"/home/jambrown/RL_Learning/safety_rl/experiments/naive/DDQN/RA/-toEnd")
 
 # Simulate trajectories on new environment
 results = env.simulate_trajectories(

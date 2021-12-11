@@ -5,7 +5,7 @@ import scipy.signal
 Generate a 10 by 10 grid with values between 0 and 1 at each index
 Values represent probability of obstacle 
 '''
-def gen_grid(type="three_block"): # TODO remember to change this to three-block for future use
+def gen_grid(type="curvy"): # TODO remember to change this to three-block for future use
     # just for testing, need to come up with many such environments (perhaps parameterized in some way)
     # local maps must be floats
 
@@ -20,8 +20,8 @@ def gen_grid(type="three_block"): # TODO remember to change this to three-block 
                 [0.9, 0.3, 0.2, 0.6, 1, 0.8, 0.6, 0.8, 0.9, 0.95],
                 [0.9, 0.6, 0.0, 0.2, 0.2, 0.1, 0.1, 0.8, 0.9, 0.95],
                 [0.9, 0.9, 0.4, 0.0, 0.0, 0.0, 0.0, 0.6, 0.9, 0.95],
-                [0.9, 0.9, 0.3, 0.0, 0.0, 0.0, 0.0, 0.6, 0.9, 0.95],
-                [0.9, 0.9, 0.2, 0.0, 0.0, 0.0, 0.0, 0.8, 0.9, 0.95]
+                [0.5, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.5],
+                [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1]
                 ])
 
     elif (type == "three_block"):

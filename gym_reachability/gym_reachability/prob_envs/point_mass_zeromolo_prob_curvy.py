@@ -117,9 +117,9 @@ class ProbZermeloShowEnvCurvy(gym.Env):
 
         # Target Set Parameters.
         if envType == 'basic' or envType == 'easy':
-            self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+            self.target_x_y_w_h = np.array([[4.5, 9, 3, 0.5]])
         else:
-            self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+            self.target_x_y_w_h = np.array([[4.5, 9, 3, 0.5]])
 
         # Gym variables.
         self.action_space = gym.spaces.Discrete(3)  # {left, up, right}

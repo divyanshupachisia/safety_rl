@@ -65,7 +65,7 @@ class ProbZermeloShowEnv(gym.Env):
       self.upward_speed = 2.
     else:
       self.upward_speed = .5
-    self.horizontal_rate = 1.
+    self.horizontal_rate = 1.5 # TODO change back to 1
     self.discrete_controls = np.array([[
         -self.horizontal_rate, self.upward_speed
     ], [0, self.upward_speed], [self.horizontal_rate, self.upward_speed]])
@@ -104,9 +104,9 @@ class ProbZermeloShowEnv(gym.Env):
 
     # Target Set Parameters.
     if envType == 'basic' or envType == 'easy':
-      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.5, 9, 3, 0.5]])
     else:
-      self.target_x_y_w_h = np.array([[4.51, 7.51, 2, 2]])
+      self.target_x_y_w_h = np.array([[4.5, 9, 3, 0.5]])
 
     # Gym variables.
     self.action_space = gym.spaces.Discrete(3)  # {left, up, right}
@@ -141,18 +141,18 @@ class ProbZermeloShowEnv(gym.Env):
     self.target_set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.array([4.0, 1.0]),
-          np.array([4.0, 2.0]),
-          np.array([3.0, 3.0]),
-          np.array([2.0, 4.0]),
+          np.array([1.8, 0.0]),
+          np.array([8.0, 0.0]),
+          np.array([4.5, 1.1]),
+          np.array([8.0, 5.0]),
       ]
 
     else:
       self.visual_initial_states = [
-        np.array([4.0, 1.0]),
-        np.array([4.0, 2.0]),
-        np.array([3.0, 3.0]),
-        np.array([2.0, 4.0]),
+          np.array([1.8, 0.0]),
+          np.array([8.0, 0.0]),
+          np.array([4.5, 1.1]),
+          np.array([8.0, 5.0]),
       ]
 
     if mode == 'extend':

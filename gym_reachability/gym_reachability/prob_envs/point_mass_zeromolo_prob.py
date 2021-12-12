@@ -141,18 +141,18 @@ class ProbZermeloShowEnv(gym.Env):
     self._set_boundary = self.get_target_set_boundary()
     if envType == 'basic' or envType == 'easy':
       self.visual_initial_states = [
-          np.array([1.8, 0.0]),
-          np.array([8.0, 0.0]),
-          np.array([4.5, 1.1]),
-          np.array([8.0, 5.0]),
+        np.array([4.0, 1.0]),
+        np.array([4.0, 2.0]),
+        np.array([3.0, 3.0]),
+        np.array([2.0, 4.0]),
       ]
 
     else:
       self.visual_initial_states = [
-          np.array([1.8, 0.0]),
-          np.array([8.0, 0.0]),
-          np.array([4.5, 1.1]),
-          np.array([8.0, 5.0]),
+        np.array([4.0, 1.0]),
+        np.array([4.0, 2.0]),
+        np.array([3.0, 3.0]),
+        np.array([2.0, 4.0]),
       ]
 
     if mode == 'extend':

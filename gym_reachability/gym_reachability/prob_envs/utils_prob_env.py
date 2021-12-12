@@ -6,11 +6,11 @@ Values represent probability of obstacle
 '''
 
 
-def gen_grid(type="curvy"):  # TODO remember to change this to three-block for future use
+def gen_grid(shape="curvy"):  # TODO remember to change this to three-block for future use
     # just for testing, need to come up with many such environments (perhaps parameterized in some way)
     # local maps must be floats
 
-    if (type == "curvy"):
+    if (shape == "curvy"):
 
         grid = np.array([
             [0.9, 0.9, 0.8, 0.6, 0.3, 0.0, 0.3, 0.8, 0.9, 0.95],
@@ -25,7 +25,7 @@ def gen_grid(type="curvy"):  # TODO remember to change this to three-block for f
             [0.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1]
         ])
 
-    elif (type == "three_block"):
+    elif (shape == "three_block"):
 
         grid = np.array([
             [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],

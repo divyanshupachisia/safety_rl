@@ -6,7 +6,7 @@ Values represent probability of obstacle
 '''
 
 
-def gen_grid(type="three_block"):  # TODO remember to change this to three-block for future use
+def gen_grid(type="curvy"):  # TODO remember to change this to three-block for future use
     # just for testing, need to come up with many such environments (perhaps parameterized in some way)
     # local maps must be floats
 

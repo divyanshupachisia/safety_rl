@@ -140,7 +140,7 @@ class ProbZermeloShowEnvCurvy(gym.Env):
 
         # Visualization Parameters
         # self.constraint_set_boundary = self.get_constraint_set_boundary()
-        self._set_boundary = self.get_target_set_boundary()
+        self.target_set_boundary = self.get_target_set_boundary()
         if envType == 'basic' or envType == 'easy':
             self.visual_initial_states = [
                 np.array([4.0, 1.0]),
